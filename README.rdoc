@@ -1,0 +1,40 @@
+= Sauce
+
+Sauce is a piece of Rack middleware for rendering Sass templates.
+
+== Synopsis
+
+  require 'sauce'
+  require 'app'
+
+  app = Rack::Builder.new {
+    map "/stylesheets" do
+      run Sauce::Parser.new(Rack::File.new('/path/to/stylesheets'))
+    end
+
+    map "/" do
+      run Sinatra::Application
+    end
+  }.to_app
+
+  Rack::Handler::Thin.run app, :Port => 3000, :Host => "0.0.0.0"
+
+This will run a Sinatra app on port 3000, but serve all files under
+/stylesheets as CSS, parsing them using Sass.
+
+== Download
+
+Github: http://github.com/jferris/sauce/tree/master
+
+Gem:
+  gem install jferris-sauce --source http://gems.github.com
+
+== License
+
+Sauce is distributed under the MIT License.
+
+== Author
+
+Sauce was written by Joe Ferris: http://joeferris.me
+
+Copyright 2009 Joe Ferris.
