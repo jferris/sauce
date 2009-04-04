@@ -3,8 +3,9 @@ require 'sass'
 
 module Sauce
   class Parser
-    def initialize(app)
-      @app = app
+    def initialize(app, options = {})
+      @app     = app
+      @options = options
     end
 
     def call(env)
@@ -24,7 +25,7 @@ module Sauce
     end
 
     def render(template)
-      Sass::Engine.new(template).render
+      Sass::Engine.new(template, @options).render
     end
 
     def template_from(body)

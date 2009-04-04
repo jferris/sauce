@@ -15,10 +15,11 @@ describe Sauce::Parser, "given an upstream app that returns 200 and a body" do
     @upstream_headers = { 'Magic' => 'Johnson' }
     @template = @upstream_body.join
     @env = 'environment'
+    @options = { :one => '1', :two => '2' }
     stub(@upstream).call { [200, @upstream_headers, @upstream_body] }
   end
 
-  subject { Sauce::Parser.new(@upstream) }
+  subject { Sauce::Parser.new(@upstream, @options) }
 
   describe "called with a template that compiles correctly" do
     before do
@@ -34,8 +35,8 @@ describe Sauce::Parser, "given an upstream app that returns 200 and a body" do
       @upstream.should have_received.call(@env)
     end
 
-    it "should build a Sass engine using the upstream response body" do
-      Sass::Engine.should have_received.new(@template)
+    it "should build a Sass engine using the upstream response body and options" do
+      Sass::Engine.should have_received.new(@template, @options)
     end
 
     it "should render the Sass template" do
@@ -74,7 +75,7 @@ describe Sauce::Parser, "called with an upstream app that returns non-200" do
     stub(Sass::Engine).new { @engine }
     stub(@engine).render { 'result' }
 
-    @app = Sauce::Parser.new(@upstream)
+    @app = Sauce::Parser.new(@upstream, {})
     @response = @app.call(@env)
   end
 
@@ -88,5 +89,12 @@ describe Sauce::Parser, "called with an upstream app that returns non-200" do
 
   it "should not build a Sass engine" do
     Sass::Engine.should have_received.new(anything).never
+  end
+end
+
+describe Sauce::Parser, "without engine options" do
+  subject { Sauce::Parser.new('app') }
+  it "should build" do
+    subject.should be_instance_of(Sauce::Parser)
   end
 end
