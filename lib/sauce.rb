@@ -9,8 +9,12 @@ module Sauce
 
     def call(env)
       status, headers, body = @app.call(env)
-      body = css_from(body)
-      return [200, css_headers(headers, body), body]
+      if status == 200
+        body = css_from(body)
+        [200, css_headers(headers, body), body]
+      else
+        [status, headers, body]
+      end
     end
 
     private

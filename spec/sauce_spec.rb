@@ -12,9 +12,10 @@ describe Sauce::Parser, "given an upstream app that returns 200 and a body" do
   before do
     @upstream = 'upstream-app'
     @upstream_body = ['gimme some ', 'sass']
+    @upstream_headers = { 'Magic' => 'Johnson' }
     @template = @upstream_body.join
     @env = 'environment'
-    stub(@upstream).call { [200, {}, @upstream_body] }
+    stub(@upstream).call { [200, @upstream_headers, @upstream_body] }
   end
 
   subject { Sauce::Parser.new(@upstream) }
@@ -53,5 +54,39 @@ describe Sauce::Parser, "given an upstream app that returns 200 and a body" do
       @headers['Content-Length'].should == @css.size.to_s
       @headers['Content-Type'].should == 'text/css'
     end
+
+    it "should append to existing headers" do
+      @upstream_headers.each do |key, value|
+        @headers[key].should == value
+      end
+    end
+  end
+end
+
+describe Sauce::Parser, "called with an upstream app that returns non-200" do
+  before do
+    @upstream = 'upstream-app'
+    @upstream_body = 'upstream-app-body'
+    @upstream_headers = 'upstream-app-headers'
+    @env = 'environment'
+    stub(@upstream).call { [404, @upstream_headers, @upstream_body] }
+    @engine = 'sass-engine'
+    stub(Sass::Engine).new { @engine }
+    stub(@engine).render { 'result' }
+
+    @app = Sauce::Parser.new(@upstream)
+    @response = @app.call(@env)
+  end
+
+  it "should call the upstream app with the environment" do
+    @upstream.should have_received.call(@env)
+  end
+
+  it "should return the response from the upstream app" do
+    @response.should == [404, @upstream_headers, @upstream_body]
+  end
+
+  it "should not build a Sass engine" do
+    Sass::Engine.should have_received.new(anything).never
   end
 end
