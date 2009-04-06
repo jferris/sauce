@@ -8,9 +8,7 @@ Sauce is a piece of Rack middleware for rendering Sass templates.
   require 'app'
 
   app = Rack::Builder.new {
-    map "/stylesheets" do
-      run Sauce::Parser.new(Rack::File.new('/path/to/stylesheets'))
-    end
+    use Sauce, :root => '/path/to/sass/templates'
 
     map "/" do
       run Sinatra::Application

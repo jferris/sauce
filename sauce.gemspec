@@ -1,7 +1,7 @@
 --- !ruby/object:Gem::Specification 
 name: sauce
 version: !ruby/object:Gem::Version 
-  version: "0.1"
+  version: "0.2"
 platform: ruby
 authors: 
 - Joe Ferris
@@ -9,7 +9,7 @@ autorequire:
 bindir: bin
 cert_chain: []
 
-date: 2009-04-04 00:00:00 -04:00
+date: 2009-04-06 00:00:00 -04:00
 default_executable: 
 dependencies: []
 
@@ -22,7 +22,9 @@ extensions: []
 extra_rdoc_files: 
 - README.rdoc
 files: 
+- LICENSE
 - Rakefile
+- README.rdoc
 - lib/sauce.rb
 - spec/sauce_spec.rb
 has_rdoc: true

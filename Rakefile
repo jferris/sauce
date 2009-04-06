@@ -14,7 +14,7 @@ end
 
 spec = Gem::Specification.new do |s|
   s.name        = %q{sauce}
-  s.version     = "0.1"
+  s.version     = "0.2"
   s.summary     = %q{Rack middleware for rendering Sass stylesheets}
   s.description = s.summary
 
