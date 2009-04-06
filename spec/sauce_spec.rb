@@ -99,3 +99,50 @@ describe Sauce::Parser, "without engine options" do
     subject.should be_instance_of(Sauce::Parser)
   end
 end
+
+describe Sauce, "with a prefix and root" do
+  before do
+    @upstream          = 'upstream-app'
+    @prefix            = '/sauce'
+    @parser            = 'sauce-parser-app'
+    @file              = 'file-app'
+    @root              = '/path/to/templates'
+    @parser_response   = [200, {}, 'parser-response']
+    @upstream_response = [200, {}, 'upstream-response']
+
+    stub(Sauce::Parser).new { @parser }
+    stub(Rack::File).   new { @file   }
+
+    stub(@parser).  call { @parser_response   }
+    stub(@upstream).call { @upstream_response }
+
+    @app = Sauce.new(@upstream, :prefix => @prefix, :root => @root)
+  end
+
+  subject { @app }
+
+  it "should build a file server" do
+    Rack::File.should have_received.new(@root)
+  end
+
+  it "should wrap the file server with a parser" do
+    Sauce::Parser.should have_received.new(@file, :load_paths => [@root])
+  end
+
+  it "should intercept a request underneath the prefix" do
+    env = env_for('/sauce/test.css')
+    subject.call(env.dup).should be(@parser_response)
+    updated_env = env.merge('PATH_INFO' => '/test.sass')
+    @parser.should have_received.call(updated_env)
+  end
+
+  it "should not intercept a request outside the prefix" do
+    env = env_for('/other/test.css')
+    subject.call(env.dup).should be(@upstream_response)
+    @upstream.should have_received.call(env)
+  end
+
+  def env_for(uri)
+    @env = Rack::MockRequest.env_for(uri, :method => 'GET')
+  end
+end

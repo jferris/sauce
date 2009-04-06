@@ -1,7 +1,7 @@
 require 'rack'
 require 'sass'
 
-module Sauce
+class Sauce
   class Parser
     def initialize(app, options = {})
       @app     = app
@@ -40,5 +40,38 @@ module Sauce
       headers['Content-Type'] = 'text/css'
       headers
     end
+  end
+
+  attr_reader :root, :prefix
+
+  def initialize(app, options)
+    @root   = options[:root]
+    @prefix = options[:prefix]
+
+    @upstream_app = app
+    @file_app     = Rack::File.new(root)
+    @parser_app   = Parser.new(@file_app, :load_paths => [@root])
+  end
+
+  def call(env)
+    if env['PATH_INFO'] =~ prefix_expr
+      @parser_app.call(transform(env))
+    else
+      @upstream_app.call(env)
+    end
+  end
+
+  private
+
+  def transform(env)
+    env.merge(
+      'PATH_INFO' => env['PATH_INFO'].
+                       sub(prefix_expr, '').
+                       sub(/\.css$/, '.sass')
+    )
+  end
+
+  def prefix_expr
+    /^#{Regexp.escape(@prefix)}/
   end
 end
