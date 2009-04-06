@@ -44,9 +44,9 @@ class Sauce
 
   attr_reader :root, :prefix
 
-  def initialize(app, options)
-    @root   = options[:root]
-    @prefix = options[:prefix]
+  def initialize(app, options = {})
+    @root   = options[:root]   || 'stylesheets'
+    @prefix = options[:prefix] || '/stylesheets'
 
     @upstream_app = app
     @file_app     = Rack::File.new(root)

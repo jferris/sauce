@@ -100,7 +100,7 @@ describe Sauce::Parser, "without engine options" do
   end
 end
 
-describe Sauce, "with a prefix and root" do
+share_examples_for "forwards to parser" do
   before do
     @upstream          = 'upstream-app'
     @prefix            = '/sauce'
@@ -115,10 +115,12 @@ describe Sauce, "with a prefix and root" do
 
     stub(@parser).  call { @parser_response   }
     stub(@upstream).call { @upstream_response }
-
-    @app = Sauce.new(@upstream, :prefix => @prefix, :root => @root)
   end
+end
 
+describe Sauce, "with a prefix and root" do
+  it_should_behave_like "forwards to parser"
+  before { @app = Sauce.new(@upstream, :prefix => @prefix, :root => @root) }
   subject { @app }
 
   it "should build a file server" do
@@ -144,5 +146,39 @@ describe Sauce, "with a prefix and root" do
 
   def env_for(uri)
     @env = Rack::MockRequest.env_for(uri, :method => 'GET')
+  end
+end
+
+describe Sauce, "without a prefix" do
+  it_should_behave_like "forwards to parser"
+  before { @app = Sauce.new(@upstream, :root => @root) }
+  subject { @app }
+
+  it "should use /stylesheets as the default prefix" do
+    subject.prefix.should == '/stylesheets'
+  end
+end
+
+describe Sauce, "without a root" do
+  it_should_behave_like "forwards to parser"
+  before { @app = Sauce.new(@upstream, :prefix => '/stylesheets') }
+  subject { @app }
+
+  it "should use stylesheets as the default root" do
+    subject.root.should == 'stylesheets'
+  end
+end
+
+describe Sauce, "without a root or prefix" do
+  it_should_behave_like "forwards to parser"
+  before { @app = Sauce.new(@upstream) }
+  subject { @app }
+
+  it "should use stylesheets as the default root" do
+    subject.root.should == 'stylesheets'
+  end
+
+  it "should use /stylesheets as the default prefix" do
+    subject.prefix.should == '/stylesheets'
   end
 end
